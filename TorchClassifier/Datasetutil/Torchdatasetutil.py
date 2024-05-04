@@ -44,20 +44,37 @@ def datanormalization():
     return transform
 
 #all transforms: https://pytorch.org/vision/main/auto_examples/plot_transforms.html#sphx-glr-auto-examples-plot-transforms-py
-def datatransforms(mean, std, imagesize=28, training=True):
-    if training==True:
-        datatransform = transforms.Compose([
-                    #transforms.RandomRotation(5, fill=(0,)),
-                    transforms.RandomCrop(imagesize, padding = 2),
-                    transforms.ToTensor(),
-                    transforms.Normalize(mean = [mean], std = [std])
-                                ])
+# def datatransforms(mean, std, imagesize=28, training=True):
+#     if training==True:
+#         datatransform = transforms.Compose([
+#                     #transforms.RandomRotation(5, fill=(0,)),
+#                     transforms.RandomCrop(imagesize, padding = 2),
+#                     transforms.ToTensor(),
+#                     transforms.Normalize(mean = [mean], std = [std])
+#                                 ])
+#     else:
+#         datatransform = transforms.Compose([
+#                            transforms.ToTensor(),
+#                            transforms.Normalize(mean = [mean], std = [std])
+#                                      ])
+#     return datatransform
+
+def data_transforms(mean_value, std_value, image_size=32, training=True):
+    if training:
+        data_transform = transforms.Compose([
+            transforms.RandomHorizontalFlip(),  # Randomly flip the input image horizontally
+            transforms.RandomRotation(10),       # Randomly rotate the input image by up to 10 degrees
+            transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),  # Randomly adjust brightness, contrast, saturation, and hue
+            transforms.RandomCrop(image_size, padding=2),  # Randomly crop the input image
+            transforms.ToTensor(),  # Convert the PIL Image to a tensor
+            transforms.Normalize(mean=[mean_value], std=[std_value])  # Normalize the tensor
+        ])
     else:
-        datatransform = transforms.Compose([
-                           transforms.ToTensor(),
-                           transforms.Normalize(mean = [mean], std = [std])
-                                     ])
-    return datatransform
+        data_transform = transforms.Compose([
+            transforms.ToTensor(),  # Convert the PIL Image to a tensor
+            transforms.Normalize(mean=[mean_value], std=[std_value])  # Normalize the tensor
+        ])
+    return data_transform
 
 def imagenetdatatransforms(training=True, imagesize=224):
     #All pre-trained models expect input images normalized in the same way, i.e. mini-batches of 3-channel RGB images of shape (3 x H x W), where H and W are expected to be at least 224. 
