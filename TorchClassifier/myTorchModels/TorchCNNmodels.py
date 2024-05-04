@@ -435,9 +435,9 @@ def create_lenet(numclasses, img_shape):
 #     print(f'The model has {num_trainparameters} trainable parameters')
 #     return model
 
-class ModifiedAlexNet(nn.Module):
+class AlexNet(nn.Module):
     def __init__(self, num_classes):
-        super(ModifiedAlexNet, self).__init__()
+        super(AlexNet, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(inplace=True),
@@ -472,7 +472,7 @@ class ModifiedAlexNet(nn.Module):
         return x
 
 def create_AlexNet(numclasses, img_shape):
-    model = ModifiedAlexNet(num_classes=numclasses)
+    model = AlexNet(num_classes=numclasses)
     return model
 
 
