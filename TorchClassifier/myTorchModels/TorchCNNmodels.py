@@ -383,67 +383,124 @@ def create_lenet(numclasses, img_shape):
     return model
 
 
-class AlexNet(nn.Module):
-    def __init__(self, output_dim):
-        super().__init__()
+# class AlexNet(nn.Module):
+#     def __init__(self, output_dim):
+#         super().__init__()
         
+#         self.features = nn.Sequential(
+#             nn.Conv2d(3, 64, 3, 2, 1), #in_channels, out_channels, kernel_size, stride, padding
+#             nn.MaxPool2d(2), #kernel_size
+#             nn.ReLU(inplace = True),
+#             nn.Conv2d(64, 192, 3, padding = 1),
+#             nn.MaxPool2d(2),
+#             nn.ReLU(inplace = True),
+#             nn.Conv2d(192, 384, 3, padding = 1),
+#             nn.ReLU(inplace = True),
+#             nn.Conv2d(384, 256, 3, padding = 1),
+#             nn.ReLU(inplace = True),
+#             nn.Conv2d(256, 256, 3, padding = 1),
+#             nn.MaxPool2d(2),
+#             nn.ReLU(inplace = True)
+#         )
+        
+#         self.classifier = nn.Sequential(
+#             nn.Dropout(0.5),
+#             nn.Linear(256 * 14 * 14, 4096),
+#             nn.ReLU(inplace = True),
+#             nn.Dropout(0.5),
+#             nn.Linear(4096, 4096),
+#             nn.ReLU(inplace = True),
+#             nn.Linear(4096, output_dim),
+#         )
+
+#     def forward(self, x):
+#         x = self.features(x)
+#         h = x.view(x.shape[0], -1)
+#         x = self.classifier(h)
+#         return x, h
+
+# def create_AlexNet(numclasses, img_shape):
+#     #for MNIST dataset
+#     print("hi")
+#     print(img_shape)
+#     #INPUT_DIM = img_shape[1]*img_shape[2]#28 * 28
+#     OUTPUT_DIM = numclasses
+#     model = AlexNet(OUTPUT_DIM)
+#     print(model)
+
+#     for p in model.parameters():
+#         if p.requires_grad:
+#             print("trainable parameters:", p.numel()) #PyTorch torch.numel() method returns the total number of elements in the input tensor.
+#     num_trainparameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
+#     print(f'The model has {num_trainparameters} trainable parameters')
+#     return model
+
+class ModifiedAlexNet(nn.Module):
+    def __init__(self, num_classes):
+        super(ModifiedAlexNet, self).__init__()
         self.features = nn.Sequential(
-            nn.Conv2d(3, 64, 3, 2, 1), #in_channels, out_channels, kernel_size, stride, padding
-            nn.MaxPool2d(2), #kernel_size
-            nn.ReLU(inplace = True),
-            nn.Conv2d(64, 192, 3, padding = 1),
-            nn.MaxPool2d(2),
-            nn.ReLU(inplace = True),
-            nn.Conv2d(192, 384, 3, padding = 1),
-            nn.ReLU(inplace = True),
-            nn.Conv2d(384, 256, 3, padding = 1),
-            nn.ReLU(inplace = True),
-            nn.Conv2d(256, 256, 3, padding = 1),
-            nn.MaxPool2d(2),
-            nn.ReLU(inplace = True)
+            nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(64, 192, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(192, 384, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(384, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
         )
-        
+        self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
         self.classifier = nn.Sequential(
-            nn.Dropout(0.5),
-            nn.Linear(256 * 14 * 14, 4096),
-            nn.ReLU(inplace = True),
-            nn.Dropout(0.5),
+            nn.Dropout(),
+            nn.Linear(256 * 6 * 6, 4096),
+            nn.ReLU(inplace=True),
+            nn.Dropout(),
             nn.Linear(4096, 4096),
-            nn.ReLU(inplace = True),
-            nn.Linear(4096, output_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(4096, num_classes),
         )
 
     def forward(self, x):
         x = self.features(x)
-        h = x.view(x.shape[0], -1)
-        x = self.classifier(h)
-        return x, h
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
 
 def create_AlexNet(numclasses, img_shape):
-    #for MNIST dataset
-    print("hi")
-    print(img_shape)
-    #INPUT_DIM = img_shape[1]*img_shape[2]#28 * 28
-    OUTPUT_DIM = numclasses
-    model = AlexNet(OUTPUT_DIM)
-    print(model)
-
-    for p in model.parameters():
-        if p.requires_grad:
-            print("trainable parameters:", p.numel()) #PyTorch torch.numel() method returns the total number of elements in the input tensor.
-    num_trainparameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f'The model has {num_trainparameters} trainable parameters')
+    model = ModifiedAlexNet(num_classes=numclasses)
     return model
 
 
+# def create_resnetmodel1(numclasses, img_shape):
+#     #model_ft = models.resnet18(pretrained=True) #Downloading: "https://download.pytorch.org/models/resnet18-5c106cde.pth" to /home/lkk/.cache/torch/hub/checkpoints/resnet18-5c106cde.pth
+#     model_ft = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
+#     num_ftrs = model_ft.fc.in_features #512
+#     # Here the size of each output sample is set to 2.
+#     # Alternatively, it can be generalized to nn.Linear(num_ftrs, len(class_names)).
+#     model_ft.fc = nn.Linear(num_ftrs, numclasses)
+#     return model_ft
+
+
 def create_resnetmodel1(numclasses, img_shape):
-    #model_ft = models.resnet18(pretrained=True) #Downloading: "https://download.pytorch.org/models/resnet18-5c106cde.pth" to /home/lkk/.cache/torch/hub/checkpoints/resnet18-5c106cde.pth
-    model_ft = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
-    num_ftrs = model_ft.fc.in_features #512
-    # Here the size of each output sample is set to 2.
-    # Alternatively, it can be generalized to nn.Linear(num_ftrs, len(class_names)).
-    model_ft.fc = nn.Linear(num_ftrs, numclasses)
-    return model_ft
+    # Load the ResNet18 model with pretrained ImageNet weights
+    model = models.resnet18(pretrained=True)
+
+    # Freeze all the parameters
+    for param in model.parameters():
+        param.requires_grad = False
+
+    # Replace the fully connected layer with a new one for our classification task
+    num_ftrs = model.fc.in_features
+    model.fc = nn.Linear(num_ftrs, numclasses)
+
+    return model
+
+
 
 #https://pytorch.org/vision/stable/models.html
 # def create_torchvisionmodel(name, numclasses, pretrained):
